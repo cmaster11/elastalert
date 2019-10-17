@@ -1,0 +1,23 @@
+on:
+  push:
+    tags:
+      - "*"
+name: Handle push tag
+jobs:
+  upload:
+    name: Upload
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      # Store current git tag
+      - run: |
+          git describe --tags 2>/dev/null > DOCKER_BUILD_VERSION
+      - name: Docker login
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+      - name: Build docker image
+        env:
+          DOCKER_REPO: "cmaster11"
+        run: bash .github/scripts/docker-build.sh
